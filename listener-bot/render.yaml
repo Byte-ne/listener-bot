@@ -2,7 +2,9 @@ services:
   - type: web
     name: foxy-friends-listener
     env: docker
+    rootDir: listener-bot
     plan: free # or starter
+
     region: ohio # Change as needed
     envVars:
       - key: PORT
