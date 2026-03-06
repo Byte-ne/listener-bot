@@ -1,0 +1,17 @@
+/.firebaserc
+/.gradle
+/.idea
+/.vscode
+/app
+/build
+/build.gradle.kts
+/firebase.json
+/functions
+/gradle
+/gradle.properties
+/java_pid24784.hprof
+/local.properties
+/service-account.json
+/settings.gradle.kts
+/setup_guide.md
+/testing_guide.md
