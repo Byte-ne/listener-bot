@@ -4,9 +4,23 @@ const { Client, GatewayIntentBits, EmbedBuilder, Events } = require('discord.js'
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
-const http = require('http');
+const express = require('express');
+const path = require('path');
 
-// 1. Initialize Firebase Admin
+// 1. Initialize Logging System
+const activityLogs = [];
+function logActivity(message, type = 'info') {
+    const log = {
+        timestamp: new Date().toLocaleTimeString(),
+        message,
+        type, // info, success, error
+    };
+    activityLogs.unshift(log);
+    if (activityLogs.length > 50) activityLogs.pop(); // Keep last 50
+    console.log(`${type === 'error' ? '❌' : '📝'} [${log.timestamp}] ${message}`);
+}
+
+// 2. Initialize Firebase Admin
 let serviceAccount;
 try {
     // Locally it expects it to be two levels up based on original code
@@ -19,7 +33,7 @@ try {
         if (process.env.FIREBASE_SERVICE_ACCOUNT) {
             serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
         } else {
-            console.error('❌ Critical: No service-account.json found. Populate FIREBASE_SERVICE_ACCOUNT env var or add the file.');
+            logActivity('No service-account.json found. Dashboard will show Firebase as offline.', 'error');
         }
     }
 }
@@ -32,27 +46,39 @@ if (serviceAccount) {
 
 const db = getFirestore();
 
-// 2. Health check server for Render
+// 3. Initialize Express Dashboard
+const app = express();
 const PORT = process.env.PORT || 3000;
 const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
 
-http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('OK');
-}).listen(PORT, () => {
-    console.log(`📡 Health check server listening on port ${PORT}`);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
 
-    // Self-ping every 10 minutes to stay awake on Render Free Tier
+app.get('/', (req, res) => {
+    res.render('index', {
+        botStatus: client.user ? 'Online' : 'Connecting...',
+        botTag: client.user?.tag || 'N/A',
+        firebaseStatus: serviceAccount ? 'Connected' : 'Disconnected',
+        logs: activityLogs,
+        externalUrl: RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
+    });
+});
+
+app.listen(PORT, () => {
+    logActivity(`Dashboard server listening on port ${PORT}`, 'success');
+
     if (RENDER_EXTERNAL_URL) {
         setInterval(() => {
+            const http = require('http');
             http.get(RENDER_EXTERNAL_URL, (res) => {
-                console.log(`💓 Self-ping sent to ${RENDER_EXTERNAL_URL}: ${res.statusCode}`);
+                // Silent ping
             }).on('error', (err) => {
-                console.error('❌ Self-ping failed:', err.message);
+                logActivity(`Self-ping failed: ${err.message}`, 'error');
             });
         }, 10 * 60 * 1000);
     }
 });
+
 
 
 
@@ -73,12 +99,14 @@ const { parseQuizMessage } = require('./parseQuizMessage');
 const SubmissionsScanner = require('./submissionsScanner');
 
 client.once(Events.ClientReady, () => {
-    console.log(`🤖 Foxy Listener is online as ${client.user.tag}`);
+    logActivity(`Foxy Listener is online as ${client.user.tag}`, 'success');
 
     // Start watching for app submissions
     const scanner = new SubmissionsScanner(db, client);
     scanner.start();
+    logActivity('Submissions Scanner started', 'info');
 });
+
 
 client.on('messageCreate', async (message) => {
     if (message.author.id !== QUIZ_BOT_ID) return;
@@ -100,9 +128,10 @@ client.on('messageCreate', async (message) => {
                 questions: data.questions,
                 sourceMessageId: message.id
             });
-            console.log(`✅ Synced new ${data.questions[0].type}: ${data.questions[0].text}`);
+            logActivity(`Synced new ${data.questions[0].type}: ${data.questions[0].text}`, 'success');
         }
         else if (data.type === 'REVEAL_QUIZ') {
+
             // Find the most recent active quiz of this type to update it
             const activeQuizzes = await db.collection('quizzes')
                 .where('status', '==', 'active')
@@ -124,13 +153,14 @@ client.on('messageCreate', async (message) => {
                     questions: updatedQuestions,
                     revealedAt: FieldValue.serverTimestamp()
                 });
-                console.log(`🏁 Finished ${data.challengeType}: Correct answer was ${data.correctAnswer}`);
+                logActivity(`Finished ${data.challengeType}: Correct answer was ${data.correctAnswer}`, 'success');
             }
         }
     } catch (error) {
-        console.error('❌ Error in listener bot:', error);
+        logActivity(`Error in listener bot: ${error.message}`, 'error');
     }
 });
+
 
 function calculateExpiry() {
     const date = new Date();

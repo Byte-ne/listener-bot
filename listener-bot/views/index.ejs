@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foxy Listener Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0b10;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --primary: #f89e1b;
+            --text: #ffffff;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --info: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-online .status-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .status-offline .status-dot { background: var(--error); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .logs-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            overflow: hidden;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logs-header {
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .logs-list {
+            padding: 1rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+        }
+
+        .log-item {
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 1rem;
+            border-left: 3px solid transparent;
+            padding-left: 0.75rem;
+        }
+
+        .log-item.info { border-left-color: var(--info); }
+        .log-item.success { border-left-color: var(--success); }
+        .log-item.error { border-left-color: var(--error); }
+
+        .log-time {
+            color: var(--text-dim);
+            min-width: 80px;
+            flex-shrink: 0;
+        }
+
+        .log-msg {
+            color: var(--text);
+        }
+
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    </style>
+    <meta http-equiv="refresh" content="30">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦊 Foxy Listener Dashboard</h1>
+            <div class="status-badge <%= botStatus === 'Online' ? 'status-online' : 'status-offline' %>">
+                <span class="status-dot"></span>
+                <%= botStatus %>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Discord Bot</div>
+                <div class="card-value"><%= botTag %></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Firebase Connection</div>
+                <div class="card-value"><%= firebaseStatus %></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Uptime Monitoring</div>
+                <div class="card-value"><%= externalUrl %></div>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <div class="logs-header">Live Activity Log (Last 50)</div>
+            <div class="logs-list">
+                <% if (logs && logs.length > 0) { %>
+                    <% logs.forEach(log => { %>
+                        <div class="log-item <%= log.type %>">
+                            <span class="log-time">[<%= log.time || log.timestamp %>]</span>
+                            <span class="log-msg"><%= log.message %></span>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">No logs yet. Waiting for activity...</div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="footer">
+            Page auto-refreshes every 30 seconds.
+        </div>
+    </div>
+</body>
+</html>
