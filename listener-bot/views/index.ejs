@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foxy Listener Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <style>
         :root {
-            --bg: #0a0b10;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg: #0d0f14;
+            --surface: #1a1d24;
+            --surface-hover: #23272f;
             --primary: #f89e1b;
-            --text: #ffffff;
+            --text: #f1f5f9;
             --text-dim: #94a3b8;
             --success: #10b981;
             --error: #ef4444;
             --info: #3b82f6;
+            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
         * {
@@ -34,7 +40,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -45,23 +51,31 @@
             margin-bottom: 3rem;
         }
 
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand .material-symbols-outlined {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
         h1 {
             font-size: 1.5rem;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
         }
 
         .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 99px;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
             font-size: 0.875rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            background: var(--card-bg);
+            gap: 0.6rem;
+            background: var(--surface);
             border: 1px solid var(--border);
         }
 
@@ -71,53 +85,114 @@
             border-radius: 50%;
         }
 
-        .status-online .status-dot { background: var(--success); box-shadow: 0 0 10px var(--success); }
-        .status-offline .status-dot { background: var(--error); }
+        .status-online .status-dot {
+            background: var(--success);
+            box-shadow: 0 0 12px var(--success);
+        }
+
+        .status-offline .status-dot {
+            background: var(--error);
+        }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .card {
-            background: var(--card-bg);
+            background: var(--surface);
             border: 1px solid var(--border);
             padding: 1.5rem;
-            border-radius: 1rem;
-            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .card:hover {
+            background: var(--surface-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            color: var(--text-dim);
+            font-size: 1.25rem;
         }
 
         .card-title {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
-            margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-weight: 600;
         }
 
         .card-value {
             font-size: 1.25rem;
             font-weight: 600;
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
         }
 
-        .logs-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
+        .card-subtext {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Resource Monitor Bar */
+        .progress-container {
+            margin-top: 1rem;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
             overflow: hidden;
-            height: 400px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .layout-main {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 1.5rem;
+        }
+
+        .logs-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 500px;
         }
 
-        .logs-header {
-            padding: 1rem 1.5rem;
-            background: rgba(255, 255, 255, 0.05);
+        .section-header {
+            padding: 1.25rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
             border-bottom: 1px solid var(--border);
-            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
             font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .logs-list {
@@ -125,91 +200,226 @@
             overflow-y: auto;
             flex-grow: 1;
             font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
         }
 
         .log-item {
-            margin-bottom: 0.75rem;
-            display: flex;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 85px 1fr;
             gap: 1rem;
-            border-left: 3px solid transparent;
-            padding-left: 0.75rem;
+            transition: background 0.1s ease;
         }
 
-        .log-item.info { border-left-color: var(--info); }
-        .log-item.success { border-left-color: var(--success); }
-        .log-item.error { border-left-color: var(--error); }
+        .log-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
 
         .log-time {
             color: var(--text-dim);
-            min-width: 80px;
-            flex-shrink: 0;
         }
 
-        .log-msg {
-            color: var(--text);
+        .log-item.success .log-msg {
+            color: var(--success);
+        }
+
+        .log-item.error .log-msg {
+            color: var(--error);
+        }
+
+        .log-item.info .log-msg {
+            color: var(--info);
+        }
+
+        .sidebar-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quiz-item {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+        }
+
+        .quiz-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .quiz-meta {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
         }
 
         .footer {
-            margin-top: 2rem;
-            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
             color: var(--text-dim);
             font-size: 0.75rem;
+            text-align: center;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
-
+        @media (max-width: 900px) {
+            .layout-main {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
     <meta http-equiv="refresh" content="30">
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>🦊 Foxy Listener Dashboard</h1>
+            <div class="brand">
+                <span class="material-symbols-outlined">monitoring</span>
+                <h1>Foxy Listener</h1>
+            </div>
             <div class="status-badge <%= botStatus === 'Online' ? 'status-online' : 'status-offline' %>">
                 <span class="status-dot"></span>
-                <%= botStatus %>
+                <span>
+                    <%= botStatus %>
+                </span>
             </div>
         </header>
 
         <div class="grid">
             <div class="card">
-                <div class="card-title">Discord Bot</div>
-                <div class="card-value"><%= botTag %></div>
+                <div class="card-header">
+                    <span class="card-title">Instance Info</span>
+                    <span class="material-symbols-outlined card-icon">smart_toy</span>
+                </div>
+                <div class="card-value">
+                    <%= botTag %>
+                </div>
+                <div class="card-subtext">Discord Listener Bot</div>
             </div>
+
             <div class="card">
-                <div class="card-title">Firebase Connection</div>
-                <div class="card-value"><%= firebaseStatus %></div>
+                <div class="card-header">
+                    <span class="card-title">Database</span>
+                    <span class="material-symbols-outlined card-icon">database</span>
+                </div>
+                <div class="card-value">
+                    <span style="color: <%= firebaseStatus === 'Connected' ? 'var(--success)' : 'var(--error)' %>">
+                        <%= firebaseStatus %>
+                    </span>
+                </div>
+                <div class="card-subtext">Cloud Firestore</div>
             </div>
+
             <div class="card">
-                <div class="card-title">Uptime Monitoring</div>
-                <div class="card-value"><%= externalUrl %></div>
+                <div class="card-header">
+                    <span class="card-title">Resource Monitor</span>
+                    <span class="material-symbols-outlined card-icon">memory</span>
+                </div>
+                <div class="card-value">
+                    <%= memory.rss %> MB <span class="card-subtext">/ 512 MB</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: <%= memory.percent %>%"></div>
+                </div>
             </div>
         </div>
 
-        <div class="logs-container">
-            <div class="logs-header">Live Activity Log (Last 50)</div>
-            <div class="logs-list">
-                <% if (logs && logs.length > 0) { %>
-                    <% logs.forEach(log => { %>
-                        <div class="log-item <%= log.type %>">
-                            <span class="log-time">[<%= log.time || log.timestamp %>]</span>
-                            <span class="log-msg"><%= log.message %></span>
-                        </div>
-                    <% }) %>
-                <% } else { %>
-                    <div style="color: var(--text-dim); text-align: center; margin-top: 2rem;">No logs yet. Waiting for activity...</div>
-                <% } %>
-            </div>
+        <div class="layout-main">
+            <section class="logs-section">
+                <div class="section-header">
+                    <h2><span class="material-symbols-outlined" style="font-size: 1.25rem;">terminal</span> Activity
+                        Logs</h2>
+                    <span class="card-subtext">Live Updates</span>
+                </div>
+                <div class="logs-list">
+                    <% if (logs && logs.length> 0) { %>
+                        <% logs.forEach(log=> { %>
+                            <div class="log-item <%= log.type %>">
+                                <span class="log-time">[<%= log.timestamp %>]</span>
+                                <span class="log-msg">
+                                    <%= log.message %>
+                                </span>
+                            </div>
+                            <% }) %>
+                                <% } else { %>
+                                    <div style="color: var(--text-dim); text-align: center; margin-top: 4rem;">
+                                        Waiting for activity logs...
+                                    </div>
+                                    <% } %>
+                </div>
+            </section>
+
+            <aside>
+                <div class="sidebar-section">
+                    <h2 class="sidebar-title">
+                        <span class="material-symbols-outlined"
+                            style="font-size: 1.25rem; color: var(--primary);">quiz</span>
+                        Active Quizzes
+                    </h2>
+
+                    <% if (activeQuizzes && activeQuizzes.length> 0) { %>
+                        <% activeQuizzes.forEach(quiz=> { %>
+                            <div class="quiz-item">
+                                <div class="quiz-title">
+                                    <%= quiz.title %>
+                                </div>
+                                <div class="quiz-meta">
+                                    <span>Type: <%= quiz.type %></span>
+                                    <span>
+                                        <%= quiz.createdAt %>
+                                    </span>
+                                </div>
+                            </div>
+                            <% }) %>
+                                <% } else { %>
+                                    <div
+                                        style="color: var(--text-dim); font-size: 0.8125rem; text-align: center; padding: 1rem;">
+                                        No active quizzes at the moment.
+                                    </div>
+                                    <% } %>
+                </div>
+
+                <div class="sidebar-section" style="margin-top: 1.5rem; background: var(--glass);">
+                    <h2 class="sidebar-title">
+                        <span class="material-symbols-outlined"
+                            style="font-size: 1.25rem; color: var(--info);">info</span>
+                        Uptime Info
+                    </h2>
+                    <div style="font-size: 0.8125rem; color: var(--text-dim);">
+                        <p>Endpoint: <a href="<%= externalUrl %>" style="color: var(--primary); text-decoration: none;">
+                                <%= externalUrl %>
+                            </a></p>
+                        <p style="margin-top: 0.5rem;">Self-ping: Active every 10m</p>
+                    </div>
+                </div>
+            </aside>
         </div>
 
         <div class="footer">
-            Page auto-refreshes every 30 seconds.
+            Designed for Foxy Friends &bull; Auto-refresh enabled
         </div>
     </div>
 </body>
+
 </html>

@@ -46,7 +46,44 @@ if (serviceAccount) {
 
 const db = getFirestore();
 
-// 3. Initialize Express Dashboard
+// 3. Status tracking
+let activeQuizzesList = [];
+async function updateActiveQuizzes() {
+    if (!db) return;
+    try {
+        const snapshot = await db.collection('quizzes')
+            .where('status', '==', 'active')
+            .orderBy('createdAt', 'desc')
+            .limit(5)
+            .get();
+        activeQuizzesList = snapshot.docs.map(doc => ({
+            id: doc.id,
+            title: doc.data().title,
+            type: doc.data().type,
+            createdAt: doc.data().createdAt?.toDate()?.toLocaleTimeString() || 'Unknown'
+        }));
+    } catch (error) {
+        logActivity(`Failed to fetch active quizzes: ${error.message}`, 'error');
+    }
+}
+
+// Update every 5 minutes
+if (serviceAccount) {
+    updateActiveQuizzes();
+    setInterval(updateActiveQuizzes, 5 * 60 * 1000);
+}
+
+function getMemoryUsage() {
+    const used = process.memoryUsage();
+    return {
+        rss: Math.round(used.rss / 1024 / 1024),
+        heapTotal: Math.round(used.heapTotal / 1024 / 1024),
+        heapUsed: Math.round(used.heapUsed / 1024 / 1024),
+        percent: Math.round((used.rss / (512 * 1024 * 1024)) * 100)
+    };
+}
+
+// 4. Initialize Express Dashboard
 const app = express();
 const PORT = process.env.PORT || 3000;
 const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
@@ -60,9 +97,12 @@ app.get('/', (req, res) => {
         botTag: client.user?.tag || 'N/A',
         firebaseStatus: serviceAccount ? 'Connected' : 'Disconnected',
         logs: activityLogs,
+        activeQuizzes: activeQuizzesList,
+        memory: getMemoryUsage(),
         externalUrl: RENDER_EXTERNAL_URL || `http://localhost:${PORT}`
     });
 });
+
 
 app.listen(PORT, () => {
     logActivity(`Dashboard server listening on port ${PORT}`, 'success');
