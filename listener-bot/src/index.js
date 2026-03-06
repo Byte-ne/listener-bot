@@ -34,12 +34,26 @@ const db = getFirestore();
 
 // 2. Health check server for Render
 const PORT = process.env.PORT || 3000;
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
+
 http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('OK');
 }).listen(PORT, () => {
     console.log(`📡 Health check server listening on port ${PORT}`);
+
+    // Self-ping every 10 minutes to stay awake on Render Free Tier
+    if (RENDER_EXTERNAL_URL) {
+        setInterval(() => {
+            http.get(RENDER_EXTERNAL_URL, (res) => {
+                console.log(`💓 Self-ping sent to ${RENDER_EXTERNAL_URL}: ${res.statusCode}`);
+            }).on('error', (err) => {
+                console.error('❌ Self-ping failed:', err.message);
+            });
+        }, 10 * 60 * 1000);
+    }
 });
+
 
 
 // 2. Initialize Discord Client
