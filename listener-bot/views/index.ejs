@@ -195,12 +195,32 @@
             gap: 0.5rem;
         }
 
+        /* Hide scrollbars globally but keep functionality */
+        html,
+        body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
         .logs-list {
             padding: 1rem;
             overflow-y: auto;
+            overflow-x: hidden;
             flex-grow: 1;
             font-family: 'Monaco', 'Consolas', monospace;
             font-size: 0.8125rem;
+            /* Individual element scroll hide */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .logs-list::-webkit-scrollbar {
+            display: none;
         }
 
         .log-item {
@@ -211,7 +231,10 @@
             grid-template-columns: 85px 1fr;
             gap: 1rem;
             transition: background 0.1s ease;
+            word-break: break-all;
+            white-space: pre-wrap;
         }
+
 
         .log-item:hover {
             background: rgba(255, 255, 255, 0.02);
