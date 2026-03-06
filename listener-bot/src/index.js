@@ -1,17 +1,46 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Events } = require('discord.js');
+
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
-// 1. Initialize Firebase Admin
-// Make sure to put your service-account.json in the listener-bot folder
-const serviceAccount = require('../../service-account.json');
+const http = require('http');
 
-initializeApp({
-    credential: cert(serviceAccount)
-});
+// 1. Initialize Firebase Admin
+let serviceAccount;
+try {
+    // Locally it expects it to be two levels up based on original code
+    serviceAccount = require('../../service-account.json');
+} catch (error) {
+    // Check local directory if missing (for Docker/Render convenience)
+    try {
+        serviceAccount = require('../service-account.json');
+    } catch (e) {
+        if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        } else {
+            console.error('❌ Critical: No service-account.json found. Populate FIREBASE_SERVICE_ACCOUNT env var or add the file.');
+        }
+    }
+}
+
+if (serviceAccount) {
+    initializeApp({
+        credential: cert(serviceAccount)
+    });
+}
 
 const db = getFirestore();
+
+// 2. Health check server for Render
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('OK');
+}).listen(PORT, () => {
+    console.log(`📡 Health check server listening on port ${PORT}`);
+});
+
 
 // 2. Initialize Discord Client
 const client = new Client({
@@ -29,7 +58,7 @@ const QUIZ_CHANNEL_ID = process.env.QUIZ_CHANNEL_ID;
 const { parseQuizMessage } = require('./parseQuizMessage');
 const SubmissionsScanner = require('./submissionsScanner');
 
-client.once('ready', () => {
+client.once(Events.ClientReady, () => {
     console.log(`🤖 Foxy Listener is online as ${client.user.tag}`);
 
     // Start watching for app submissions
@@ -95,4 +124,19 @@ function calculateExpiry() {
     return date.toISOString();
 }
 
-client.login(process.env.LISTENER_BOT_TOKEN);
+const token = process.env.LISTENER_BOT_TOKEN ? process.env.LISTENER_BOT_TOKEN.trim() : null;
+if (!token) {
+    console.error('❌ Error: LISTENER_BOT_TOKEN is missing in .env');
+    process.exit(1);
+}
+
+client.login(token).catch(err => {
+    console.error('❌ Failed to login to Discord:', err.message);
+    if (err.message.includes('TokenInvalid')) {
+        console.error('👉 Please double check your LISTENER_BOT_TOKEN in the .env file.');
+    }
+    process.exit(1);
+});
+
+
+

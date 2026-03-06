@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: foxy-friends-listener
+    env: docker
+    plan: free # or starter
+    region: ohio # Change as needed
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: LISTENER_BOT_TOKEN
+        sync: false
+      - key: QUIZ_APP_BOT_ID
+        sync: false
+      - key: QUIZ_CHANNEL_ID
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+    healthCheckPath: /
