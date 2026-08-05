@@ -7,7 +7,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/Terminay/lessel)
 
 <a href="https://github.com">
-  <img src="https://img.shields.io/github/stars/Terminay/lessel?style=flat-square&logo=github" height="50" width="150">
+  <img src="https://img.shields.io/github/stars/Terminay/lessel?style=flat-square&logo=github" height="45" width="150">
 </a>
 
 **lessel** (from "vessel") is a general-purpose, open-source message pipeline framework. It connects to platforms like **Discord**, **WhatsApp**, and **Slack**, listens for messages that match your rules, stores them, and exposes them through a REST API for your own executors (plugins) to process.
