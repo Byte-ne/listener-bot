@@ -1,4 +1,4 @@
-![GitHub Repo Banner](https://ghrb.waren.build/banner?header=lessel&subheader=By+Tanay+Mishra&bg=013B84-016EEA&color=FFFFFF&headerfont=JetBrains+Mono&subheaderfont=Fira+Code&watermarkpos=bottom-right)
+![GitHub Repo Banner](https://ghrb.waren.build/banner?header=Lessel&subheader=%21%5Bdiscord%5D+%21%5Btelegram%5D+%21%5Bwhatsapp%5D+%21%5Bgithub%5D&bg=190000-300156&color=7B7BF9&subheadercolor=990F0F&headerfont=JetBrains+Mono&subheaderfont=Inter&watermarkpos=bottom-right)
 <!-- Created with GitHub Repo Banner by Waren Gonzaga: https://ghrb.waren.build -->
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
